@@ -1,0 +1,11 @@
+ID,name,description,price,stock,category,imageUrl,rating,status_code
+aaaaaaaa-0000-0000-0000-000000000001,iPhone 15,Latest Apple smartphone with A16 chip,79999.00,50,Electronics,https://example.com/iphone15.jpg,4.5,A
+aaaaaaaa-0000-0000-0000-000000000002,Samsung Galaxy S24,Flagship Android smartphone,69999.00,30,Electronics,https://example.com/galaxys24.jpg,4.3,A
+aaaaaaaa-0000-0000-0000-000000000003,Sony WH-1000XM5,Industry-leading noise cancelling headphones,24999.00,8,Electronics,https://example.com/sony-wh.jpg,4.7,L
+aaaaaaaa-0000-0000-0000-000000000004,Apple MacBook Air M2,Thin and light laptop with M2 chip,114999.00,20,Computers,https://example.com/macbook-air.jpg,4.8,A
+aaaaaaaa-0000-0000-0000-000000000005,Dell XPS 15,High performance Windows laptop,89999.00,15,Computers,https://example.com/dell-xps.jpg,4.4,A
+aaaaaaaa-0000-0000-0000-000000000006,Nike Air Max 270,Comfortable everyday sneakers,8999.00,100,Footwear,https://example.com/nike-airmax.jpg,4.2,A
+aaaaaaaa-0000-0000-0000-000000000007,Adidas Ultraboost 23,Premium running shoes,12999.00,60,Footwear,https://example.com/adidas-ultraboost.jpg,4.6,A
+aaaaaaaa-0000-0000-0000-000000000008,Levi's 501 Jeans,Classic straight fit denim jeans,3999.00,5,Clothing,https://example.com/levis-501.jpg,4.1,L
+aaaaaaaa-0000-0000-0000-000000000009,The Alchemist,Bestselling novel by Paulo Coelho,399.00,0,Books,https://example.com/alchemist.jpg,4.9,U
+aaaaaaaa-0000-0000-0000-000000000010,LG 27 inch 4K Monitor,UHD IPS display for professionals,34999.00,25,Electronics,https://example.com/lg-monitor.jpg,4.5,A

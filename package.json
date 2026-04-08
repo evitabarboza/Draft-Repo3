@@ -1,0 +1,42 @@
+{
+  "name": "ecommerce-cap",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "dependencies": {
+    "@sap/cds": "^9",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2.2.0",
+    "cds-plugin-ui5": "^0.13.0"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch-product-ui": "cds watch --open ecommerce.productui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-cart-ui": "cds watch --open ecommerce.cartui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-order-ui": "cds watch --open ecommerce.orderui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-payments-ui": "cds watch --open ecommerce.paymentsui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-users-ui": "cds watch --open ecommerce.usersui/index.html?sap-ui-xx-viewCache=false --livereload false"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "database": "db.sqlite"
+        }
+      }
+    }
+  },
+  "private": true,
+  "workspaces": [
+    "app/*"
+  ],
+  "sapux": [
+    "app/product-ui",
+    "app/cart-ui",
+    "app/order-ui",
+    "app/payments-ui",
+    "app/users-ui"
+  ]
+}
