@@ -477,28 +477,6 @@ annotate service.Cart with @(
             Action : 'EcommerceService.checkoutCart',
             Label : 'Order Now',
         },
-        {
-            $Type : 'UI.DataFieldForActionGroup',
-            Actions : [
-                {
-                    $Type : 'UI.DataFieldForAction',
-                    Action : 'EcommerceService.EntityContainer/addToCart',
-                    Label : 'Add to Cart',
-                },
-                {
-                    $Type : 'UI.DataFieldForAction',
-                    Action : 'EcommerceService.EntityContainer/updateCartItem',
-                    Label : 'Update Cart Item',
-                },
-                {
-                    $Type : 'UI.DataFieldForAction',
-                    Action : 'EcommerceService.EntityContainer/removeFromCart',
-                    Label : 'Remove From Cart',
-                },
-            ],
-            ID : 'ActionMenu',
-            Label : 'Modify Cart',
-        },
     ],
 
     // UI.Identification      : [

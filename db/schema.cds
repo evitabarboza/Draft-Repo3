@@ -8,7 +8,8 @@ using {
 // ─────────────────────────────────────────
 // USERS
 // ─────────────────────────────────────────
-entity Users : cuid {
+@odata.draft.enabled
+entity Users : cuid, managed {
     name     : String(100) not null;
     email    : String(255) not null;
     password : String(255);
@@ -46,7 +47,7 @@ entity ProductStatus {
 // CART
 // ─────────────────────────────────────────
 @odata.draft.enabled
-entity Cart : cuid {
+entity Cart : cuid, managed {
     user       : Association to Users;
     totalPrice : Decimal(10, 2) default 0.0;
     items      : Composition of many CartItems

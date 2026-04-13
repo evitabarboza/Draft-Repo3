@@ -23,6 +23,22 @@ annotate service.Users with @(
                 Label : 'Role',
                 Value : role,
             },
+            {
+                $Type : 'UI.DataField',
+                Value : createdAt,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : createdBy,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : modifiedBy,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : modifiedAt,
+            },
         ],
     },
     UI.Facets : [
@@ -57,11 +73,6 @@ annotate service.Users with @(
         {
             $Type : 'UI.DataFieldForActionGroup',
             Actions : [
-                {
-                    $Type : 'UI.DataFieldForAction',
-                    Action : 'EcommerceService.EntityContainer/loginUser',
-                    Label : 'Login User',
-                },
                 {
                     $Type : 'UI.DataFieldForAction',
                     Action : 'EcommerceService.EntityContainer/registerUser',

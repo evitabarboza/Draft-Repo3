@@ -25,6 +25,19 @@
         "credentials": {
           "database": "db.sqlite"
         }
+      },
+      "auth": {
+        "kind": "mocked",
+        "users": {
+          "admin": {
+            "password": "admin",
+            "roles": ["ADMIN"]
+          },
+          "customer": {
+            "password": "customer",
+            "roles": ["CUSTOMER"]
+          }
+        }
       }
     }
   },

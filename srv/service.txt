@@ -432,9 +432,9 @@ module.exports = cds.service.impl(async function (srv) {
     srv.after('UPDATE', Cart, async (data, req) => {
         const cartId = data?.ID || req.data?.ID;
         console.log('📦 after UPDATE Cart — recalculating total for:', cartId);
-        if (cartId)
-            // await recalcCartTotal(cartId);
-            await recalcCartTotal(cartId, req);
+        if (cartId) 
+           // await recalcCartTotal(cartId);
+        await recalcCartTotal(cartId, req);
     });
 
     // ─────────────────────────────────────────────────
@@ -592,66 +592,17 @@ module.exports = cds.service.impl(async function (srv) {
     // ─────────────────────────────────────────────────
     // CART — Remove item (Postman / API)
     // ─────────────────────────────────────────────────
-    // srv.on('removeFromCart', async (req) => {
-    //     const { cartItemId } = req.data;
-
-    //     const item = await SELECT.one.from(CartItems).where({ ID: cartItemId });
-    //     if (!item) return req.error(404, 'Cart item not found');
-
-    //     await DELETE.from(CartItems).where({ ID: cartItemId });
-    //     await recalcCartTotal(item.cart_ID);
-
-    //     return { message: 'Item removed from cart' };
-    // });
-
-
-
-
     srv.on('removeFromCart', async (req) => {
-        const { cartItemId, quantityToRemove } = req.data;
-
-        if (!cartItemId)
-            return req.error(400, 'cartItemId is required');
-
-        if (!quantityToRemove || quantityToRemove <= 0)
-            return req.error(400, 'quantityToRemove must be greater than zero');
+        const { cartItemId } = req.data;
 
         const item = await SELECT.one.from(CartItems).where({ ID: cartItemId });
         if (!item) return req.error(404, 'Cart item not found');
 
-        if (quantityToRemove > item.quantity)
-            return req.error(400, 'Cannot remove more than existing quantity');
+        await DELETE.from(CartItems).where({ ID: cartItemId });
+        await recalcCartTotal(item.cart_ID);
 
-        const newQty = item.quantity - quantityToRemove;
-
-        if (newQty > 0) {
-            // ✅ Reduce quantity
-            await UPDATE(CartItems)
-                .set({ quantity: newQty })
-                .where({ ID: cartItemId });
-
-            await recalcCartTotal(item.cart_ID);
-
-            return {
-                message: 'Item quantity updated',
-                remainingQuantity: newQty
-            };
-
-        } else {
-            // ✅ Remove completely
-            await DELETE.from(CartItems).where({ ID: cartItemId });
-
-            await recalcCartTotal(item.cart_ID);
-
-            return {
-                message: 'Item removed from cart'
-            };
-        }
+        return { message: 'Item removed from cart' };
     });
-
-
-
-
 
     // ─────────────────────────────────────────────────
     // CART — Update quantity (Postman / API)
@@ -762,86 +713,15 @@ module.exports = cds.service.impl(async function (srv) {
     // ─────────────────────────────────────────────────
     // ORDERS — Update status
     // ─────────────────────────────────────────────────
-    // srv.on('updateOrderStatus', async (req) => {
-    //     const { orderId, status } = req.data;
-
-    //     const order = await SELECT.one.from(Orders).where({ ID: orderId });
-    //     if (!order) return req.error(404, 'Order not found');
-
-    //     const validTransitions = {
-    //         PLACED: ['SHIPPED', 'CANCELLED'],
-    //         SHIPPED: ['DELIVERED'],
-    //         DELIVERED: [],
-    //         CANCELLED: []
-    //     };
-
-    //     if (!validTransitions[order.orderStatus]?.includes(status))
-    //         return req.error(400, `Invalid status transition: ${order.orderStatus} → ${status}`);
-
-    //     await UPDATE(Orders).set({ orderStatus: status }).where({ ID: orderId });
-    //     return await SELECT.one.from(Orders).where({ ID: orderId });
-    // });
-
-
-
-
-    // srv.on('updateOrderStatus', async (req) => {
-    //     const { orderId, status } = req.data;
-
-    //     const order = await SELECT.one.from(Orders).where({ ID: orderId });
-    //     if (!order) return req.error(404, 'Order not found');
-
-    //     const validTransitions = {
-    //         PLACED: ['SHIPPED', 'CANCELLED'],
-    //         SHIPPED: ['DELIVERED', 'CANCELLED'], // allow cancel after shipped if needed
-    //         DELIVERED: [],
-    //         CANCELLED: []
-    //     };
-
-    //     if (!validTransitions[order.orderStatus]?.includes(status))
-    //         return req.error(400, `Invalid status transition: ${order.orderStatus} → ${status}`);
-
-    //     // ✅ If cancelling → restore stock
-    //     if (status === 'CANCELLED') {
-    //         const items = await SELECT.from(OrderItems).where({ order_ID: orderId });
-
-    //         for (const item of items) {
-    //             const product = await SELECT.one.from(Products).where({ ID: item.product_ID });
-
-    //             if (product) {
-    //                 const newStock = product.stock + item.quantity;
-
-    //                 await UPDATE(Products)
-    //                     .set({
-    //                         stock: newStock,
-    //                         status_code: getStatusCode(newStock)
-    //                     })
-    //                     .where({ ID: product.ID });
-    //             }
-    //         }
-    //     }
-
-    //     await UPDATE(Orders).set({ orderStatus: status }).where({ ID: orderId });
-
-    //     return await SELECT.one.from(Orders).where({ ID: orderId });
-    // });
-
-
-
     srv.on('updateOrderStatus', async (req) => {
         const { orderId, status } = req.data;
 
         const order = await SELECT.one.from(Orders).where({ ID: orderId });
         if (!order) return req.error(404, 'Order not found');
 
-        // ✅ NEW RULE: Block cancellation if already paid
-        if (status === 'CANCELLED' && order.paymentStatus === 'SUCCESS') {
-            return req.error(400, 'Order cannot be cancelled once payment is completed');
-        }
-
         const validTransitions = {
             PLACED: ['SHIPPED', 'CANCELLED'],
-            SHIPPED: ['DELIVERED', 'CANCELLED'],
+            SHIPPED: ['DELIVERED'],
             DELIVERED: [],
             CANCELLED: []
         };
@@ -849,97 +729,20 @@ module.exports = cds.service.impl(async function (srv) {
         if (!validTransitions[order.orderStatus]?.includes(status))
             return req.error(400, `Invalid status transition: ${order.orderStatus} → ${status}`);
 
-        // If cancelling → restore stock
-        if (status === 'CANCELLED') {
-            const items = await SELECT.from(OrderItems).where({ order_ID: orderId });
-
-            for (const item of items) {
-                const product = await SELECT.one.from(Products).where({ ID: item.product_ID });
-
-                if (product) {
-                    const newStock = product.stock + item.quantity;
-                    await UPDATE(Products)
-                        .set({
-                            stock: newStock,
-                            status_code: getStatusCode(newStock)
-                        })
-                        .where({ ID: product.ID });
-                }
-            }
-        }
-
         await UPDATE(Orders).set({ orderStatus: status }).where({ ID: orderId });
-
         return await SELECT.one.from(Orders).where({ ID: orderId });
     });
 
-
-
-
-
-    // // ─────────────────────────────────────────────────
-    // // PAYMENTS — Simulate
-    // // ─────────────────────────────────────────────────
-    // srv.on('simulatePayment', async (req) => {
-    //     const { orderId, paymentMode } = req.data;
-
-    //     const order = await SELECT.one.from(Orders).where({ ID: orderId });
-    //     if (!order) return req.error(404, 'Order not found');
-    //     if (order.paymentStatus === 'SUCCESS') return req.error(400, 'Order already paid');
-
-    //     const isSuccess = Math.random() < 0.8;
-    //     const status = isSuccess ? 'SUCCESS' : 'FAILED';
-    //     const transactionId = crypto.randomBytes(16).toString('hex');
-
-    //     await INSERT.into(Payments).entries({
-    //         order_ID: orderId,
-    //         amount: order.totalAmount,
-    //         paymentMode,
-    //         status,
-    //         transactionId
-    //     });
-
-    //     await UPDATE(Orders)
-    //         .set({
-    //             paymentStatus: status,
-    //             orderStatus: isSuccess ? 'PLACED' : 'CANCELLED'
-    //         })
-    //         .where({ ID: orderId });
-
-    //     return await SELECT.one.from(Payments).where({ order_ID: orderId, transactionId });
-    // });
-
-
+    // ─────────────────────────────────────────────────
+    // PAYMENTS — Simulate
+    // ─────────────────────────────────────────────────
     srv.on('simulatePayment', async (req) => {
         const { orderId, paymentMode } = req.data;
 
         const order = await SELECT.one.from(Orders).where({ ID: orderId });
-
         if (!order) return req.error(404, 'Order not found');
         if (order.paymentStatus === 'SUCCESS') return req.error(400, 'Order already paid');
 
-        // AUTO-FAIL logic for Cancelled Orders
-        if (order.orderStatus === 'CANCELLED') {
-            const transactionId = crypto.randomBytes(16).toString('hex');
-
-            // Record the failed payment attempt in the DB
-            await INSERT.into(Payments).entries({
-                order_ID: orderId,
-                amount: order.totalAmount,
-                paymentMode,
-                status: 'FAILED', // Forced failure
-                transactionId
-            });
-
-            // Ensure the order stays Cancelled and Payment Status is updated to FAILED
-            await UPDATE(Orders)
-                .set({ paymentStatus: 'FAILED' })
-                .where({ ID: orderId });
-
-            return req.error(400, 'Payment auto-failed: Cannot pay for a cancelled order.');
-        }
-
-        // Standard payment simulation for active orders
         const isSuccess = Math.random() < 0.8;
         const status = isSuccess ? 'SUCCESS' : 'FAILED';
         const transactionId = crypto.randomBytes(16).toString('hex');

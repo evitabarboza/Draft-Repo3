@@ -43,7 +43,7 @@
     }
   },
   "sap.ui5": {
-    "flexEnabled": true,
+    "flexEnabled": false,
     "dependencies": {
       "minUI5Version": "1.146.0",
       "libs": {
@@ -60,7 +60,11 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "ecommerce.usersui.i18n.i18n"
+          "bundleName": "ecommerce.usersui.i18n.i18n",
+          "supportedLocales": [
+            "en"
+          ],
+          "fallbackLocale": "en"
         }
       },
       "": {
@@ -71,10 +75,6 @@
           "autoExpandSelect": true,
           "earlyRequests": true
         }
-      },
-      "@i18n": {
-        "type": "sap.ui.model.resource.ResourceModel",
-        "uri": "i18n/i18n.properties"
       }
     },
     "resources": {
