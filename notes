@@ -1,0 +1,341 @@
+// ===============================
+// Book.java (Entity)
+// ===============================
+
+package com.example.demo.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+
+@Entity
+public class Book {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @NotBlank(message = "Title cannot be empty")
+    private String title;
+
+    @NotBlank(message = "Author cannot be empty")
+    private String author;
+
+    @Min(value = 100, message = "Price must be at least 100")
+    private double price;
+
+    // Getter and Setter
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+}
+
+
+
+
+
+
+// ===============================
+// BookRepository.java
+// ===============================
+
+package com.example.demo.repository;
+
+import com.example.demo.entity.Book;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface BookRepository extends JpaRepository<Book, Integer> {
+
+    // Custom Finder Method
+    Book findByTitle(String title);
+
+    List<Book> findByAuthor(String author);
+}
+
+
+
+
+
+
+// ===============================
+// BookService.java
+// ===============================
+
+package com.example.demo.service;
+
+import com.example.demo.entity.Book;
+import com.example.demo.repository.BookRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class BookService {
+
+    @Autowired
+    private BookRepository repo;
+
+    // Add Single Book
+    public String saveBook(Book book) {
+        repo.save(book);
+        return "Book Added Successfully";
+    }
+
+    // Add Multiple Books
+    public String saveAllBooks(List<Book> books) {
+        repo.saveAll(books);
+        return "All Books Added Successfully";
+    }
+
+    // Get All Books
+    public List<Book> getAllBooks() {
+        return repo.findAll();
+    }
+
+    // Get Book By ID
+    public Book getBookById(int id) {
+        Optional<Book> book = repo.findById(id);
+        return book.orElse(null);
+    }
+
+    // Update Book
+    public String updateBook(int id, Book newBook) {
+        Optional<Book> existing = repo.findById(id);
+
+        if (existing.isPresent()) {
+            Book book = existing.get();
+            book.setTitle(newBook.getTitle());
+            book.setAuthor(newBook.getAuthor());
+            book.setPrice(newBook.getPrice());
+
+            repo.save(book);
+            return "Book Updated Successfully";
+        } else {
+            return "Book Not Found";
+        }
+    }
+
+    // Delete Book
+    public String deleteBook(int id) {
+        Optional<Book> book = repo.findById(id);
+
+        if (book.isPresent()) {
+            repo.deleteById(id);
+            return "Book Deleted Successfully";
+        } else {
+            return "Book Not Found";
+        }
+    }
+
+    // Delete All Books
+    public String deleteAllBooks() {
+        repo.deleteAll();
+        return "All Books Deleted Successfully";
+    }
+
+    // Find By Title
+    public Book getBookByTitle(String title) {
+        return repo.findByTitle(title);
+    }
+
+    // Find By Author
+    public List<Book> getBookByAuthor(String author) {
+        return repo.findByAuthor(author);
+    }
+
+    // Sorting by Price
+    public List<Book> getBooksSortedByPrice() {
+        return repo.findAll(Sort.by(Sort.Direction.ASC, "price"));
+    }
+}
+
+
+
+
+
+
+
+// ===============================
+// BookController.java
+// ===============================
+
+package com.example.demo.controller;
+
+import com.example.demo.entity.Book;
+import com.example.demo.service.BookService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/books")
+public class BookController {
+
+    @Autowired
+    private BookService service;
+
+    // Add Single Book
+    @PostMapping("/add")
+    public ResponseEntity<String> addBook(
+            @Valid @RequestBody Book book) {
+
+        service.saveBook(book);
+
+        return new ResponseEntity<>(
+                "Book Added Successfully",
+                HttpStatus.CREATED
+        );
+    }
+
+    // Add Multiple Books
+    @PostMapping("/addAll")
+    public ResponseEntity<String> addAllBooks(
+            @RequestBody List<Book> books) {
+
+        service.saveAllBooks(books);
+
+        return ResponseEntity.ok(
+                "All Books Added Successfully"
+        );
+    }
+
+    // Get All Books
+    @GetMapping("/all")
+    public ResponseEntity<List<Book>> getAllBooks() {
+        return ResponseEntity.ok(
+                service.getAllBooks()
+        );
+    }
+
+    // Get Book By ID
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getBookById(
+            @PathVariable int id) {
+
+        Book book = service.getBookById(id);
+
+        if (book != null) {
+            return ResponseEntity.ok(book);
+        } else {
+            return new ResponseEntity<>(
+                    "Book Not Found",
+                    HttpStatus.NOT_FOUND
+            );
+        }
+    }
+
+    // Update Book
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateBook(
+            @PathVariable int id,
+            @RequestBody Book book) {
+
+        String result = service.updateBook(id, book);
+
+        if (result.equals("Book Updated Successfully")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return new ResponseEntity<>(
+                    result,
+                    HttpStatus.NOT_FOUND
+            );
+        }
+    }
+
+    // Delete Book
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteBook(
+            @PathVariable int id) {
+
+        String result = service.deleteBook(id);
+
+        if (result.equals("Book Deleted Successfully")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return new ResponseEntity<>(
+                    result,
+                    HttpStatus.NOT_FOUND
+            );
+        }
+    }
+
+    // Delete All Books
+    @DeleteMapping("/deleteAll")
+    public ResponseEntity<String> deleteAllBooks() {
+        return ResponseEntity.ok(
+                service.deleteAllBooks()
+        );
+    }
+
+    // Find By Title
+    @GetMapping("/title/{title}")
+    public ResponseEntity<?> getBookByTitle(
+            @PathVariable String title) {
+
+        Book book = service.getBookByTitle(title);
+
+        if (book != null) {
+            return ResponseEntity.ok(book);
+        } else {
+            return new ResponseEntity<>(
+                    "Book Not Found",
+                    HttpStatus.NOT_FOUND
+            );
+        }
+    }
+
+    // Find By Author
+    @GetMapping("/author/{author}")
+    public ResponseEntity<List<Book>> getBookByAuthor(
+            @PathVariable String author) {
+
+        return ResponseEntity.ok(
+                service.getBookByAuthor(author)
+        );
+    }
+
+    // Sorting by Price
+    @GetMapping("/sort")
+    public ResponseEntity<List<Book>> sortBooksByPrice() {
+        return ResponseEntity.ok(
+                service.getBooksSortedByPrice()
+        );
+    }
+}
